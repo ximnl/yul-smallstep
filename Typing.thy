@@ -249,11 +249,11 @@ fun not_elist :: "expr \<Rightarrow> bool" where
     These variables cannot be used in the function defined, nor can they be re-declared. 
 *)
 function (sequential) 
-    es_type :: "type_env \<Rightarrow> id0 set \<Rightarrow> ftype_env \<Rightarrow> expr list \<Rightarrow> (bool\<times>type_env)" and 
+    type_es :: "type_env \<Rightarrow> id0 set \<Rightarrow> ftype_env \<Rightarrow> expr list \<Rightarrow> (bool\<times>type_env)" and 
     type_b :: "type_env \<Rightarrow> id0 set \<Rightarrow> ftype_env \<Rightarrow> block \<Rightarrow> bool" and
     type_e :: "type_env \<Rightarrow> id0 set \<Rightarrow> ftype_env \<Rightarrow> expr \<Rightarrow> expr_type_res"
 where 
-  "es_type vte xs fte es = 
+  "type_es vte xs fte es = 
     foldl (\<lambda>acc e. 
             (if (fst acc) then 
               (case type_e (snd acc) xs fte e of 
@@ -262,7 +262,7 @@ where
               acc)) 
           (True, vte) es" |
 
-  "type_b vte xs fte (Blk es) = (case (es_type vte xs fte es) of (b, vte') \<Rightarrow> b)" |
+  "type_b vte xs fte (Blk es) = (case (type_es vte xs fte es) of (b, vte') \<Rightarrow> b)" |
   
   "type_e vte xs fte (EId x) = 
     (case (lm_get vte x) of Some (VType tn) \<Rightarrow> ETypable (DataType [tn]) vte | _ \<Rightarrow> EUntypable)" |
@@ -465,7 +465,7 @@ where
         case get_a_func_types es1 of \<comment> \<open>forbit function definition inside the init block\<close>
           Some [] \<Rightarrow> (
           \<comment> \<open> variables in the outer scope can all be used in blk1 \<close>
-          case (es_type vte xs fte es1) of
+          case (type_es vte xs fte es1) of
             (True, vte') \<Rightarrow> (
             case (type_e vte' xs fte e) of
                ETypable (DataType [Bool]) vte'' \<Rightarrow> (
